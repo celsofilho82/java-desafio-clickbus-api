@@ -9,6 +9,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,20 +37,23 @@ public class PlacesController {
 	public List<PlaceDTO> list(String name) {
 		if (name == null) {
 			List<Place> places = placeRepository.findAll();
+
 			return PlaceDTO.convert(places);
 		} else {
 			List<Place> places = placeRepository.findByName(name);
+
 			return PlaceDTO.convert(places);
 		}
 
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<PlaceDetailsDTO> view(@PathVariable Long id) {
+	public ResponseEntity<PlaceDetailsDTO> show(@PathVariable Long id) {
 
 		Optional<Place> place = placeRepository.findById(id);
 
 		if (place.isPresent()) {
+
 			return ResponseEntity.ok(new PlaceDetailsDTO(place.get()));
 		}
 
@@ -77,7 +81,23 @@ public class PlacesController {
 
 		if (optional.isPresent()) {
 			Place place = form.update(id, placeRepository);
+
 			return ResponseEntity.ok(new PlaceDTO(place));
+		}
+
+		return ResponseEntity.notFound().build();
+	}
+	
+	@DeleteMapping("/{id}")
+	@Transactional
+	public ResponseEntity<?> delete(@PathVariable Long id) {
+
+		Optional<Place> optional = placeRepository.findById(id);
+
+		if (optional.isPresent()) {
+			placeRepository.deleteById(id);
+
+			return ResponseEntity.ok().build();
 		}
 
 		return ResponseEntity.notFound().build();
